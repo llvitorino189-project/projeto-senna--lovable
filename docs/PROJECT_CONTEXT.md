@@ -1,21 +1,60 @@
 # SENA IMPORTS — Contexto do projeto
 
-## Etapa 03 — Painel administrativo
+## Objetivo e situação das etapas
 
-Status: contexto documentado; painel não implementado.
+Este documento reúne o contexto do projeto, as evidências de arquitetura e o planejamento disponível. Distingue requisitos de funcionalidades implementadas e não comprova a conclusão de uma etapa apenas pela existência de documentação.
 
-Este documento registra os requisitos solicitados e as evidências disponíveis. Não comprova a conclusão das etapas anteriores nem a existência de funcionalidades além das descritas abaixo.
+| Etapa | Contexto disponível | Situação |
+| --- | --- | --- |
+| 01 | Criação de `public.profiles`, conforme SQL informado como aplicado | Tabela e políticas confirmadas pelo contexto; conclusão integral da etapa não comprovada |
+| 02 | O histórico solicitou avaliar pré-requisitos e pediu definição do escopo | Escopo e conclusão não documentados no histórico disponível |
+| 03 | Painel administrativo da SENA IMPORTS | Escopo planejado descrito neste documento; implementação não confirmada |
+| 04 | Citada no pedido de documentação, sem especificação funcional no histórico disponível | Escopo não definido; não atribuir funcionalidades ou entregas por suposição |
+
+O banco conectado e o cadastro de contas existente devem ser preservados. A existência desses recursos foi informada no contexto; seus arquivos de implementação não constam da listagem atual.
 
 ## Evidências da revisão
 
 - Repositório: `llvitorino189-project/projeto-senna--lovable`.
 - Branch: `main`.
-- HEAD informado na leitura: `a555de323a574fe3f7df1d2ea8b74f746850c119`.
-- A listagem fornecida contém somente `README.md`, lido integralmente, com o título do projeto.
-- `docs/PROJECT_CONTEXT.md` não constava dessa listagem; este documento foi criado nesta entrega, não recuperado de um planejamento anterior.
-- Não constam arquivos da aplicação, dependências, rotas, design system, autenticação ou cliente Supabase nessa listagem. Portanto, não foi possível identificar suas implementações nem integrar uma rota administrativa preservando os controles existentes.
-- O banco conectado e a existência de `public.profiles` foram confirmados no contexto do pedido. A ausência dos arquivos da aplicação não significa ausência de banco.
+- HEAD de referência anterior a esta atualização: `39dfb28cc6842b7f4057c70dc21f97b3af544ea9`.
+- A listagem atual contém `README.md` e `docs/PROJECT_CONTEXT.md`, ambos lidos integralmente. O README contém apenas o título do projeto.
+- Este documento já existia e foi atualizado nesta entrega; não representa código de aplicação.
+- Não constam arquivos da aplicação, dependências, rotas, design system, autenticação ou cliente Supabase nessa listagem. Não há evidência de código para identificar framework, estrutura de componentes, roteamento ou mecanismo de autorização administrativa.
+- O banco conectado, o cliente Supabase já configurado e o cadastro de contas existente foram informados no contexto. A ausência dos arquivos da aplicação na listagem não significa ausência desses recursos no projeto.
+- A existência de `public.profiles` e a aplicação do SQL foram confirmadas pelo contexto do pedido, não por execução de migrations ou consultas nesta revisão.
 - Não houve execução de consultas, migrations, build ou testes nesta revisão.
+
+## Arquitetura: confirmação e limites
+
+### Identificado nos arquivos
+
+A estrutura versionada apresentada nesta revisão é documental: um README e este arquivo de contexto. Não há código de aplicação nesses arquivos. Portanto, nenhuma stack de frontend, biblioteca de componentes, rota, serviço de backend ou fluxo de telas pode ser descrito como identificado no código.
+
+### Informado no contexto do projeto
+
+- Autenticação e cadastro de contas existentes por Supabase Auth, com cliente Supabase já configurado.
+- Banco conectado com a tabela de perfil `public.profiles`.
+- Vínculo do perfil com a conta por `profiles.id = auth.users.id`.
+- Isolamento dos perfis por RLS, conforme políticas descritas abaixo.
+
+Esses elementos orientam a integração futura, mas não comprovam como o código atual organiza sessão, providers, formulários ou persistência do perfil. A criação automática do perfil após o cadastro não foi verificada.
+
+### Preservação do cadastro e integração
+
+- Reutilizar o cliente Supabase e o cadastro de contas existentes; não criar autenticação paralela nem substituir o fluxo sem necessidade aprovada.
+- Usar os métodos de autenticação existentes da plataforma: `signUp`, `signInWithPassword`, `signOut`, `getSession` e `onAuthStateChange`.
+- Não criar tabela de senhas, coluna de senha em `profiles` ou verificação manual de credenciais. As senhas são gerenciadas pelo Supabase Auth, não pela tabela de perfil.
+- Consultar os dados adicionais do perfil após autenticação, usando o identificador da sessão como `profiles.id`.
+- Quando houver implementação do vínculo de cadastro com perfil, gravar apenas as colunas existentes e respeitar a sessão e a RLS. Se o cadastro exigir confirmação de e-mail e ainda não houver sessão, a gravação deve aguardar autenticação, sem desabilitar políticas nem usar credenciais privilegiadas no navegador.
+- Preservar registros existentes e não sobrescrever um nome já salvo ao apenas garantir a existência do perfil.
+- Não incluir senhas, tokens, chaves de API ou outras credenciais nesta documentação.
+
+## Etapa 03 — Painel administrativo
+
+Status: requisitos documentados; nenhuma implementação do painel foi confirmada nos arquivos apresentados.
+
+Objetivo: criar uma central administrativa profissional, inspirada na organização da Nuvemshop, integrada à aplicação e aos controles de acesso existentes. O mapa abaixo é planejamento, não uma lista de funcionalidades já entregues.
 
 ## Banco confirmado
 
@@ -99,6 +138,14 @@ A proteção deve abranger acesso direto às rotas, ações e consultas, inclusi
 
 Enquanto não houver autorização administrativa identificada, não liberar o painel como se todos os usuários autenticados fossem administradores.
 
+## Etapa 04 — Escopo ainda não definido
+
+O histórico disponível não especifica objetivo, módulos, telas, operações de banco, permissões ou critérios de aceite para a etapa 04. Nenhuma funcionalidade deve ser atribuída a essa etapa por inferência, incluindo os módulos planejados para a etapa 03.
+
+Antes de implementar a etapa 04, seu escopo precisa ser definido e registrado: entregas, limites, dependências das etapas anteriores, permissões necessárias e critérios de validação. Isso não impede documentar o contexto já conhecido, mas impede declarar a etapa planejada em detalhe, implementada ou pronta para execução.
+
+As restrições de preservação de `public.profiles`, do cadastro de contas existente e de proteção das credenciais também se aplicam à etapa 04. Não há autorização implícita para alterar o banco ou substituir a autenticação.
+
 ## Validação pendente
 
 Nenhum teste desktop ou mobile foi executado. Não há aplicação verificável na listagem desta revisão.
@@ -115,6 +162,8 @@ Critérios para a futura validação:
 
 ## Entrega desta revisão
 
-Entregue: documentação do contexto, inventário das evidências e critérios de disponibilidade, identidade visual, segurança e validação.
+Entregue: atualização deste documento com contexto do projeto, limites da identificação da arquitetura, distinção entre recursos informados e funcionalidades planejadas, escopo disponível da etapa 03 e ausência de definição da etapa 04. Foram registradas a preservação de `public.profiles (id, nome, criado_em)` e do cadastro de contas existente, sem criar tabela de senhas nem incluir credenciais.
 
-Pendente: identificar os arquivos da aplicação e o mecanismo administrativo no projeto; implementar e integrar o painel; usar o ativo oficial de marca; validar desktop e mobile. A implementação não deve substituir a stack nem criar uma aplicação paralela para compensar os arquivos ausentes da listagem.
+Esta entrega altera somente documentação. Não modifica o banco, o cadastro, permissões ou arquivos da aplicação e não implementa os módulos descritos.
+
+Pendências do produto: identificar a implementação da aplicação e seu mecanismo administrativo; implementar e integrar o painel da etapa 03; identificar e usar o ativo oficial de marca; validar desktop e mobile; definir o escopo da etapa 04. Não declarar essas pendências concluídas a partir deste documento. A implementação não deve substituir a stack nem criar uma aplicação paralela para compensar os arquivos ausentes da listagem.
